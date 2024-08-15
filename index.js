@@ -13,6 +13,20 @@ app.use(cors({
 }))
 app.use(cookieParser())
 
+
+const secureRoute = (req,res,next)=>{
+      const token = req.cookies.token
+      jwt.verify(token,process.env.JWT_SECRET,(err,userData)=>{
+          if(err){
+            return res.status(401).send('unauthorized access')
+          }
+          else{
+            req.user = userData
+            return next()
+          }
+      })
+}
+
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASS}@databases1.utppk3d.mongodb.net/?retryWrites=true&w=majority&appName=databases1`;
 
@@ -35,6 +49,10 @@ async function run() {
 
     app.get('/',(req,res)=>{
         res.send('Tech House server')
+    })
+
+    app.get('/products', secureRoute ,(req,res)=>{
+          res.send([])
     })
 
     app.post('/token',(req,res)=>{
