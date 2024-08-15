@@ -1,9 +1,17 @@
 const express = require('express');
 require('dotenv').config()
-
+const jwt = require('jsonwebtoken')
 const app = express()
 const port = process.env.PORT || 5000
+const cookieParser = require('cookie-parser')
+const cors = require('cors')
 
+app.use(express.json())
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}))
+app.use(cookieParser())
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASS}@databases1.utppk3d.mongodb.net/?retryWrites=true&w=majority&appName=databases1`;
@@ -27,6 +35,12 @@ async function run() {
 
     app.get('/',(req,res)=>{
         res.send('Tech House server')
+    })
+
+    app.post('/token',(req,res)=>{
+        const data = req.body
+        const token = jwt.sign(data,process.env.JWT_SECRET, {expiresIn: '24h'})
+        res.cookie('token',token, {httpOnly: true, sameSite: 'none', secure:true}).send()
     })
     
 
