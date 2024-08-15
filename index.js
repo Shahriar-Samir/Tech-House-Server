@@ -40,7 +40,11 @@ async function run() {
     app.post('/token',(req,res)=>{
         const data = req.body
         const token = jwt.sign(data,process.env.JWT_SECRET, {expiresIn: '24h'})
-        res.cookie('token',token, {httpOnly: true, sameSite: 'none', secure:true}).send()
+        res.cookie('token',token, {httpOnly: true, sameSite: 'none', secure:true, }).send()
+    })
+
+    app.post('/removeToken',(req,res)=>{
+        res.clearCookie('token',{httpOnly: true, sameSite: 'none', secure: true , maxAge: 0}).send()
     })
     
 
