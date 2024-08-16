@@ -69,6 +69,12 @@ async function run() {
           const products = await productsCollection.find({name: {$regex: new RegExp(value,'i')}}).skip(countInt*pagesInt).limit(pagesInt).toArray()
           res.send(products)
     })
+    app.get('/searchCount', secureRoute, async(req,res)=>{
+          const {value} = req.query
+          const products = await productsCollection.find({name: {$regex: new RegExp(value,'i')}}).toArray()
+          const count = products.length
+          res.send({count})
+    })
 
     app.get('/itemsCount', secureRoute, async(req,res)=>{
           const products =  await productsCollection.find().toArray()
