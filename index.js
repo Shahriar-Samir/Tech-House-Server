@@ -55,14 +55,21 @@ async function run() {
     })
 
     app.get('/products', secureRoute, async(req,res)=>{
-          const {pages,count,brands} = req.query
+          const {pages,count,brands,categories} = req.query
           const pagesInt = parseInt(pages)
           const countInt = parseInt(count)
           const newBrands = brands.split(',')
-          let query = {}
-          if(newBrands.length>0 && newBrands[0] !== ''){
-            query = {brand:{$in:newBrands}}
-          }
+          const newCategories = categories.split(',')
+            let query = {}
+            if(newBrands[0] !== '' && newCategories[0] === ''){
+              query = {brand:{$in:newBrands}}
+            }
+            if(newCategories[0] !== '' && newBrands[0] === ''){
+              query = {category:{$in:newCategories}}
+            }
+            if(newBrands[0] !== '' && newCategories[0] !== ''){
+              query = {brand:{$in:newBrands},category:{$in:newCategories}}
+            }
           const products = await productsCollection.find(query).skip(countInt*pagesInt).limit(pagesInt).toArray()
           res.send(products)
     })
