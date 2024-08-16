@@ -44,6 +44,9 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     // Send a ping to confirm a successful connection
+
+    const productsCollection = client.db('Tech_House').collection('Products')
+
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
@@ -51,8 +54,9 @@ async function run() {
         res.send('Tech House server')
     })
 
-    app.get('/products', secureRoute ,(req,res)=>{
-          res.send([])
+    app.get('/products', secureRoute, async(req,res)=>{
+          const products =  await productsCollection.find().toArray()
+          res.send(products)
     })
 
     app.post('/token',(req,res)=>{
