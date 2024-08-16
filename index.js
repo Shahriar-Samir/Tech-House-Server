@@ -55,8 +55,17 @@ async function run() {
     })
 
     app.get('/products', secureRoute, async(req,res)=>{
-          const products =  await productsCollection.find().toArray()
+          const {pages,count} = req.query
+          const pagesInt = parseInt(pages)
+          const countInt = parseInt(count)
+          const products = await productsCollection.find().skip(countInt*pagesInt).limit(pagesInt).toArray()
           res.send(products)
+    })
+
+    app.get('/itemsCount', secureRoute, async(req,res)=>{
+          const products =  await productsCollection.find().toArray()
+          const count = products.length
+          res.send({count})
     })
 
     app.post('/token',(req,res)=>{
