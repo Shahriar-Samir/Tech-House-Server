@@ -55,23 +55,16 @@ async function run() {
     })
 
     app.get('/products', secureRoute, async(req,res)=>{
-          const {pages,count,brands,categories,sortByPrice,sortByDate} = req.query
+          const {pages,count,brands,categories,sortByPrice,sortByDate,value} = req.query
+          console.log(value, typeof value)
           const pagesInt = parseInt(pages)
           const countInt = parseInt(count)
           const newBrands = brands.split(',')
           const newCategories = categories.split(',')
-            let query = {}
-            if(newBrands[0] !== '' && newCategories[0] === ''){
-              query = {brand:{$in:newBrands}}
-            }
-            if(newCategories[0] !== '' && newBrands[0] === ''){
-              query = {category:{$in:newCategories}}
-            }
-            if(newBrands[0] !== '' && newCategories[0] !== ''){
-              query = {brand:{$in:newBrands},category:{$in:newCategories}}
-            }
+          let query = {}
             let priceSortType = 'default'
             let dateSortType = 'default'
+    
             if(sortByPrice === 'low'){
               priceSortType = 1
             }
@@ -82,15 +75,25 @@ async function run() {
               priceSortType = 'default'
             }
             if(sortByDate === 'oldest'){
-              dateSortType = -1
+              dateSortType = 1
             }
             if(sortByDate === 'latest'){
-              dateSortType = 1
+              dateSortType = -1
             }
             if(sortByDate === 'default'){
               dateSortType = 'default'
             }
-
+            if(value==='null'){
+              if(newBrands[0] !== '' && newCategories[0] === ''){
+                query = {brand:{$in:newBrands}}
+              }
+              if(newCategories[0] !== '' && newBrands[0] === ''){
+                query = {category:{$in:newCategories}}
+              }
+              if(newBrands[0] !== '' && newCategories[0] !== ''){
+                query = {brand:{$in:newBrands},category:{$in:newCategories}}
+              }
+              
             if(priceSortType == 'default' && dateSortType == 'default'){
               const products = await productsCollection.find(query).skip(countInt*pagesInt).limit(pagesInt).toArray()
               return res.send(products)
@@ -109,49 +112,97 @@ async function run() {
               const products = await productsCollection.find(query).skip(countInt*pagesInt).limit(pagesInt).sort({price: priceSortType, createdAt: dateSortType}).toArray()
               return res.send(products)
             }
+            }
+            if(value){
+              if(newBrands[0] !== '' && newCategories[0] === ''){
+                query = {brand:{$in:newBrands}, name: {$regex: new RegExp(value,'i')} }
+              }
+              if(newCategories[0] !== '' && newBrands[0] === ''){
+                query = {category:{$in:newCategories}, name: {$regex: new RegExp(value,'i')} }
+              }
+              if(newBrands[0] !== '' && newCategories[0] !== ''){
+                query = {brand:{$in:newBrands},category:{$in:newCategories}, name: {$regex: new RegExp(value,'i')} }
+              }
+
+
+            if(priceSortType == 'default' && dateSortType == 'default'){
+              const products = await productsCollection.find({name: {$regex: new RegExp(value,'i')}}).skip(countInt*pagesInt).limit(pagesInt).toArray()
+              return res.send(products)
+            }
+
+            if(priceSortType == 'default' && dateSortType !== 'default'){
+              const products = await productsCollection.find(query).skip(countInt*pagesInt).limit(pagesInt).sort({createdAt: dateSortType}).toArray()
+              return res.send(products)
+            }
+            if(priceSortType !== 'default' && dateSortType == 'default'){
+              const products = await productsCollection.find(query).skip(countInt*pagesInt).limit(pagesInt).sort({price: priceSortType}).toArray()
+              return res.send(products)
+            }
+
+            if(priceSortType !== 'default' && dateSortType !== 'default'){
+              const products = await productsCollection.find(query).skip(countInt*pagesInt).limit(pagesInt).sort({price: priceSortType, createdAt: dateSortType}).toArray()
+              return res.send(products)
+            }
+            }
+       
     })
 
-    app.get('/search', secureRoute, async(req,res)=>{
-          const {pages,count,value} = req.query
-          const pagesInt = parseInt(pages)
-          const countInt = parseInt(count)
-          const products = await productsCollection.find({name: {$regex: new RegExp(value,'i')}}).skip(countInt*pagesInt).limit(pagesInt).toArray()
-          res.send(products)
-    })
-    app.get('/searchCount', secureRoute, async(req,res)=>{
-          const {value} = req.query
-          const products = await productsCollection.find({name: {$regex: new RegExp(value,'i')}}).toArray()
-          const count = products.length
-          res.send({count})
-    })
 
     app.get('/itemsCount', secureRoute, async(req,res)=>{
-      const {brands,categories} = req.query
+      const {brands,categories,value} = req.query
       const newBrands = brands.split(',')
       const newCategories = categories.split(',')
         let query = {}
-        if(newBrands[0] === '' && newCategories[0]===''){
-          const products =  await productsCollection.find(query).toArray()
-          const count = products.length
-          return res.send({count})
+           if(value==='null'){
+          if(newBrands[0] === '' && newCategories[0]===''){
+            const products =  await productsCollection.find(query).toArray()
+            const count = products.length
+            return res.send({count})
+          }
+          if(newBrands[0] !== '' && newCategories[0] === ''){
+            query = {brand:{$in:newBrands}}
+            const products =  await productsCollection.find(query).toArray()
+            const count = products.length
+            return res.send({count})
+          }
+          if(newCategories[0] !== '' && newBrands[0] === ''){
+            query = {brand:{$in:newBrands}}
+            const products =  await productsCollection.find(query).toArray()
+            const count = products.length
+            return res.send({count})
+          }
+          if(newBrands[0] !== '' && newCategories[0] !== ''){
+            query = {brand:{$in:newBrands}}
+            const products =  await productsCollection.find(query).toArray()
+            const count = products.length
+            return res.send({count})
+          }
         }
-        if(newBrands[0] !== '' && newCategories[0] === ''){
-          query = {brand:{$in:newBrands}}
-          const products =  await productsCollection.find(query).toArray()
-          const count = products.length
-          return res.send({count})
-        }
-        if(newCategories[0] !== '' && newBrands[0] === ''){
-          query = {brand:{$in:newBrands}}
-          const products =  await productsCollection.find(query).toArray()
-          const count = products.length
-          return res.send({count})
-        }
-        if(newBrands[0] !== '' && newCategories[0] !== ''){
-          query = {brand:{$in:newBrands}}
-          const products =  await productsCollection.find(query).toArray()
-          const count = products.length
-          return res.send({count})
+      
+        if(value){
+          if(newBrands[0] === '' && newCategories[0]===''){
+            const products =  await productsCollection.find({name: {$regex: new RegExp(value,'i')}}).toArray()
+            const count = products.length
+            return res.send({count})
+          }
+          if(newBrands[0] !== '' && newCategories[0] === ''){
+            query = {brand:{$in:newBrands}, name: {$regex: new RegExp(value,'i')}}
+            const products =  await productsCollection.find(query).toArray()
+            const count = products.length
+            return res.send({count})
+          }
+          if(newCategories[0] !== '' && newBrands[0] === ''){
+            query = {brand:{$in:newBrands}, name: {$regex: new RegExp(value,'i')}}
+            const products =  await productsCollection.find(query).toArray()
+            const count = products.length
+            return res.send({count})
+          }
+          if(newBrands[0] !== '' && newCategories[0] !== ''){
+            query = {brand:{$in:newBrands}, name: {$regex: new RegExp(value,'i')}}
+            const products =  await productsCollection.find(query).toArray()
+            const count = products.length
+            return res.send({count})
+          }
         }
      
     })
