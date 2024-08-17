@@ -167,15 +167,14 @@ async function run() {
             query = {brand:{$in:newBrands}}
             const products =  await productsCollection.find(query).toArray()
             const count = products.length
-            console.log(count)
+    
             return res.send({count})
           }
           if(newCategories[0] !== '' && newBrands[0] === ''){
             query = {category:{$in:newCategories}}
             const products =  await productsCollection.find(query).toArray()
             const count = products.length
-            console.log(query)
-            console.log(count)
+      
             return res.send({count})
           }
           if(newBrands[0] !== '' && newCategories[0] !== ''){
