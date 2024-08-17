@@ -55,13 +55,14 @@ async function run() {
     })
 
     app.get('/products', secureRoute, async(req,res)=>{
-          const {pages,count,brands,categories,sortByPrice,sortByDate,value} = req.query
-          console.log(value, typeof value)
+          const {pages,count,brands,categories,sortByPrice,sortByDate,value,priceRange} = req.query
+          const priceMin = 0
+          const priceMax = parseFloat(priceRange)
           const pagesInt = parseInt(pages)
           const countInt = parseInt(count)
           const newBrands = brands.split(',')
           const newCategories = categories.split(',')
-          let query = {}
+          let query = {price: { $gte: priceMin,$lte: priceMax}}
             let priceSortType = 'default'
             let dateSortType = 'default'
     
@@ -85,13 +86,13 @@ async function run() {
             }
             if(value==='null'){
               if(newBrands[0] !== '' && newCategories[0] === ''){
-                query = {brand:{$in:newBrands}}
+                query = {brand:{$in:newBrands},price: { $gte: priceMin,$lte: priceMax}}
               }
               if(newCategories[0] !== '' && newBrands[0] === ''){
-                query = {category:{$in:newCategories}}
+                query = {category:{$in:newCategories},price: { $gte: priceMin,$lte: priceMax}}
               }
               if(newBrands[0] !== '' && newCategories[0] !== ''){
-                query = {brand:{$in:newBrands},category:{$in:newCategories}}
+                query = {brand:{$in:newBrands},category:{$in:newCategories},price: { $gte: priceMin,$lte: priceMax}}
               }
      
               
@@ -117,13 +118,13 @@ async function run() {
             else{
               query={name: {$regex: new RegExp(value,'i')}}
               if(newBrands[0] !== '' && newCategories[0] === ''){
-                query = {brand:{$in:newBrands}, name: {$regex: new RegExp(value,'i')} }
+                query = {brand:{$in:newBrands}, name: {$regex: new RegExp(value,'i')},price: { $gte: priceMin,$lte: priceMax} }
               }
               if(newCategories[0] !== '' && newBrands[0] === ''){
-                query = {category:{$in:newCategories}, name: {$regex: new RegExp(value,'i')} }
+                query = {category:{$in:newCategories}, name: {$regex: new RegExp(value,'i')},price: { $gte: priceMin,$lte: priceMax} }
               }
               if(newBrands[0] !== '' && newCategories[0] !== ''){
-                query = {brand:{$in:newBrands},category:{$in:newCategories}, name: {$regex: new RegExp(value,'i')} }
+                query = {brand:{$in:newBrands},category:{$in:newCategories}, name: {$regex: new RegExp(value,'i')},price: { $gte: priceMin,$lte: priceMax} }
               }
 
             if(priceSortType == 'default' && dateSortType == 'default'){
@@ -150,10 +151,12 @@ async function run() {
 
 
     app.get('/itemsCount', secureRoute, async(req,res)=>{
-      const {brands,categories,value} = req.query
+      const {brands,categories,value,priceRange} = req.query
       const newBrands = brands.split(',')
       const newCategories = categories.split(',')
-        let query = {}
+      const priceMin = 0
+      const priceMax = parseFloat(priceRange)
+        let query = {price: { $gte: priceMin,$lte: priceMax}}
            if(value==='null'){
           if(newBrands[0] === '' && newCategories[0]===''){
             const products =  await productsCollection.find(query).toArray()
@@ -185,24 +188,24 @@ async function run() {
       
         else{
           if(newBrands[0] === '' && newCategories[0]===''){
-            const products =  await productsCollection.find({name: {$regex: new RegExp(value,'i')}}).toArray()
+            const products =  await productsCollection.find({name: {$regex: new RegExp(value,'i')},price: { $gte: priceMin,$lte: priceMax}}).toArray()
             const count = products.length
             return res.send({count})
           }
           if(newBrands[0] !== '' && newCategories[0] === ''){
-            query = {brand:{$in:newBrands}, name: {$regex: new RegExp(value,'i')}}
+            query = {brand:{$in:newBrands}, name: {$regex: new RegExp(value,'i'),price: { $gte: priceMin,$lte: priceMax}}}
             const products =  await productsCollection.find(query).toArray()
             const count = products.length
             return res.send({count})
           }
           if(newCategories[0] !== '' && newBrands[0] === ''){
-            query = {brand:{$in:newBrands}, name: {$regex: new RegExp(value,'i')}}
+            query = {brand:{$in:newBrands}, name: {$regex: new RegExp(value,'i'),price: { $gte: priceMin,$lte: priceMax}}}
             const products =  await productsCollection.find(query).toArray()
             const count = products.length
             return res.send({count})
           }
           if(newBrands[0] !== '' && newCategories[0] !== ''){
-            query = {brand:{$in:newBrands}, name: {$regex: new RegExp(value,'i')}}
+            query = {brand:{$in:newBrands}, name: {$regex: new RegExp(value,'i'),price: { $gte: priceMin,$lte: priceMax}}}
             const products =  await productsCollection.find(query).toArray()
             const count = products.length
             return res.send({count})
