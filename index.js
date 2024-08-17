@@ -93,6 +93,7 @@ async function run() {
               if(newBrands[0] !== '' && newCategories[0] !== ''){
                 query = {brand:{$in:newBrands},category:{$in:newCategories}}
               }
+     
               
             if(priceSortType == 'default' && dateSortType == 'default'){
               const products = await productsCollection.find(query).skip(countInt*pagesInt).limit(pagesInt).toArray()
@@ -113,7 +114,8 @@ async function run() {
               return res.send(products)
             }
             }
-            if(value){
+            else{
+              query={name: {$regex: new RegExp(value,'i')}}
               if(newBrands[0] !== '' && newCategories[0] === ''){
                 query = {brand:{$in:newBrands}, name: {$regex: new RegExp(value,'i')} }
               }
@@ -124,23 +126,22 @@ async function run() {
                 query = {brand:{$in:newBrands},category:{$in:newCategories}, name: {$regex: new RegExp(value,'i')} }
               }
 
-
             if(priceSortType == 'default' && dateSortType == 'default'){
-              const products = await productsCollection.find({name: {$regex: new RegExp(value,'i')}}).skip(countInt*pagesInt).limit(pagesInt).toArray()
+              const products = await productsCollection.find(query).skip(countInt*pagesInt).limit(pagesInt).toArray()
               return res.send(products)
             }
 
             if(priceSortType == 'default' && dateSortType !== 'default'){
-              const products = await productsCollection.find(query).skip(countInt*pagesInt).limit(pagesInt).sort({createdAt: dateSortType}).toArray()
+              const products = await productsCollection.find(query).skip(countInt*pagesInt).limit(pagesInt).sort({createdAt: dateSortType,brand:1,name:1}).toArray()
               return res.send(products)
             }
             if(priceSortType !== 'default' && dateSortType == 'default'){
-              const products = await productsCollection.find(query).skip(countInt*pagesInt).limit(pagesInt).sort({price: priceSortType}).toArray()
+              const products = await productsCollection.find(query).skip(countInt*pagesInt).limit(pagesInt).sort({price: priceSortType,brand:1,name:1}).toArray()
               return res.send(products)
             }
 
             if(priceSortType !== 'default' && dateSortType !== 'default'){
-              const products = await productsCollection.find(query).skip(countInt*pagesInt).limit(pagesInt).sort({price: priceSortType, createdAt: dateSortType}).toArray()
+              const products = await productsCollection.find(query).skip(countInt*pagesInt).limit(pagesInt).sort({price: priceSortType, createdAt: dateSortType,brand:1,name:1}).toArray()
               return res.send(products)
             }
             }
@@ -163,12 +164,15 @@ async function run() {
             query = {brand:{$in:newBrands}}
             const products =  await productsCollection.find(query).toArray()
             const count = products.length
+            console.log(count)
             return res.send({count})
           }
           if(newCategories[0] !== '' && newBrands[0] === ''){
-            query = {brand:{$in:newBrands}}
+            query = {category:{$in:newCategories}}
             const products =  await productsCollection.find(query).toArray()
             const count = products.length
+            console.log(query)
+            console.log(count)
             return res.send({count})
           }
           if(newBrands[0] !== '' && newCategories[0] !== ''){
@@ -179,7 +183,7 @@ async function run() {
           }
         }
       
-        if(value){
+        else{
           if(newBrands[0] === '' && newCategories[0]===''){
             const products =  await productsCollection.find({name: {$regex: new RegExp(value,'i')}}).toArray()
             const count = products.length
