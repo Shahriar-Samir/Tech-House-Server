@@ -8,7 +8,7 @@ const cors = require('cors')
 
 app.use(express.json())
 app.use(cors({
-    origin: ['http://localhost:5173'm,'https://tech-house-client.vercel.app'],
+    origin: ['http://localhost:5173','https://tech-house-client.vercel.app'],
     credentials: true
 }))
 app.use(cookieParser())
