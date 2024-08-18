@@ -45,10 +45,7 @@ async function run() {
     // await client.connect();
     // Send a ping to confirm a successful connection
 
-    const productsCollection = client.db('Tech_House').collection('Products')
 
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
     app.get('/',(req,res)=>{
         res.send('Tech House server')
@@ -224,7 +221,10 @@ async function run() {
         res.clearCookie('token',{httpOnly: true, sameSite: 'none', secure: true , maxAge: 0}).send()
     })
     
+    const productsCollection = client.db('Tech_House').collection('Products')
 
+    await client.db("admin").command({ ping: 1 });
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
   } finally {
     // Ensures that the client will close when you finish/error
